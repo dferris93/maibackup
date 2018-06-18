@@ -11,7 +11,15 @@ LOGFILE="/dev/stdout"
 
 log ()
 {
-	echo "$@" | ts >> $LOGFILE
+	if [[ -n $@ ]] 
+	then
+		echo "$(date +'%b %d %T') $@" >> $LOGFILE
+	else	
+		while read -r line
+		do
+			echo "$(date +'%b %d %T') $line" >> $LOGFILE
+		done
+	fi
 }
 
 notify () 
@@ -27,22 +35,22 @@ notify ()
 run ()
 {
 	log "Running: $@"
-	$@ 2>&1 | ts >> $LOGFILE
+	$@ 2>&1 | log
 	if [[ $? != 0 ]]
 	then
 		log "$@ exited with non zero status: $?"
-		quit $?
+		quit
 	fi
 }
 
 quit ()
 {
     log "quitting backup"
-    post_backup_command | ts >> $LOGFILE || failed_backup_command | ts >> $LOGFILE
+    failed_backup_command 2>&1 | log
     log "Running notification..."
     run notify 
     rm -f $LOCK_FILE
-    exit $1
+    exit 1
 }
 
 retry ()
@@ -51,7 +59,7 @@ retry ()
 	log "Running: $@"
 	while [ true ]
 	do
-		$@ 2>&1 | ts >> $LOGFILE
+		$@ 2>&1 | log
 		if [[ $? != 0 ]]
 		then
 		    if [[ $RETRIES > 0 ]]
@@ -63,7 +71,8 @@ retry ()
 			SLEEPTIME=$((SLEEPTIME*2))
 			continue
 		    else
-			quit $?
+			log "$@ exited with non zero status: $?"
+			quit
 		    fi
 		else
 		    break
@@ -82,7 +91,7 @@ fi
 ulimit -n 2048
 
 log "Acquiring lock file $LOCK_FILE" 
-log $(/usr/bin/lockfile -$LOCK_WAIT_TIME -r $NUM_TRIES  $LOCK_FILE 2>&1 || exit 1 && echo "lockfile ok")
+log $(/usr/bin/lockfile -$LOCK_WAIT_TIME -r $NUM_TRIES  $LOCK_FILE 2>&1 || exit 1 && echo "acquired lock")
 
 log "Removing old log files"
 find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
@@ -94,7 +103,6 @@ trap quit SIGINT SIGTERM SIGHUP
 run pre_backup_command 
 
 log "Starting the backup" 
-sync
 retry $BACKUP_CMD
 
 log "Running the post backup command" 
