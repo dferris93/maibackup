@@ -47,7 +47,6 @@ quit ()
 {
     log "quitting backup"
     failed_backup_command 2>&1 | log
-    log "Running notification..."
     run notify 
     rm -f $LOCK_FILE
     exit 1
@@ -96,16 +95,11 @@ log $(/usr/bin/lockfile -$LOCK_WAIT_TIME -r $NUM_TRIES  $LOCK_FILE 2>&1 || exit 
 log "Removing old log files"
 find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
 
-log "Running the pre backup command" 
-
 trap quit SIGINT SIGTERM SIGHUP
 
 run pre_backup_command 
 
-log "Starting the backup" 
 retry $BACKUP_CMD
-
-log "Running the post backup command" 
 
 run post_backup_command 
 
