@@ -26,7 +26,10 @@ notify ()
 {
 	if [[ -n $EMAIL ]]
 	then
-		tail -n 100 $LOGFILE | mail -s "Backup failure on $(hostname)" $EMAIL
+		if [[ -f $LOGFILE ]]
+		then
+			tail -n 100 $LOGFILE | mail -s "Backup failure on $(hostname)" $EMAIL
+		fi
 	else	
 		echo "Backup failed"
 	fi
