@@ -7,17 +7,17 @@ LOCK_WAIT_TIME="7200"
 NUM_TRIES=4
 SLEEPTIME=20
 LOCK_FILE="/tmp/backup.lck"
-LOGFILE="/dev/stdout"
+LOGFILE="/dev/null"
 
 log ()
 {
 	if [[ -n $@ ]] 
 	then
-		echo "$(date +'%b %d %T') $@" >> $LOGFILE
+		echo "$(date +'%b %d %T') $@" | tee -a $LOGFILE 
 	else	
 		while read -r line
 		do
-			echo "$(date +'%b %d %T') $line" >> $LOGFILE
+			echo "$(date +'%b %d %T') $line" | tee -a $LOGFILE 
 		done
 	fi
 }
