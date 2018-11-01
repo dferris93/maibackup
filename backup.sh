@@ -92,13 +92,13 @@ fi
 
 ulimit -n 2048
 
+trap quit SIGINT SIGTERM SIGHUP
 log "Acquiring lock file $LOCK_FILE" 
 log $(/usr/bin/lockfile -$LOCK_WAIT_TIME -r $NUM_TRIES  $LOCK_FILE 2>&1 || exit 1 && echo "acquired lock")
 
 log "Removing old log files"
 find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
 
-trap quit SIGINT SIGTERM SIGHUP
 
 run pre_backup_command 
 
