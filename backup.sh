@@ -48,10 +48,12 @@ run ()
 
 quit ()
 {
+    trap '' SIGINT
     log "quitting backup"
     failed_backup_command 2>&1 | log
     run notify 
     rm -f $LOCK_FILE
+    trap SIGINT
     exit 1
 }
 
