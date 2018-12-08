@@ -99,7 +99,10 @@ log "Acquiring lock file $LOCK_FILE"
 log $(/usr/bin/lockfile -$LOCK_WAIT_TIME -r $NUM_TRIES  $LOCK_FILE 2>&1 || exit 1 && echo "acquired lock")
 
 log "Removing old log files"
-find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
+if [ -d $LOGDIR ]
+then
+	find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
+fi
 
 
 run pre_backup_command 
