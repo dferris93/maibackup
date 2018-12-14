@@ -58,6 +58,15 @@ quit ()
     exit 1
 }
 
+lock_quit ()
+{
+	trap '' SIGINT
+	log "Unable to actuire lockfile"
+	run notify
+	trap SIGINT
+	exit 1
+}
+
 retry ()
 {
 	RETRIES=$NUM_TRIES
@@ -97,14 +106,13 @@ ulimit -n 2048
 
 trap quit SIGINT SIGTERM SIGHUP
 log "Acquiring lock file $LOCK_FILE" 
-log $($LOCKFILE -$LOCK_WAIT_TIME -r $NUM_TRIES  $LOCK_FILE 2>&1 || exit 1 && echo "acquired lock")
+$LOCKFILE -$LOCK_WAIT_TIME -r $NUM_TRIES $LOCK_FILE 2> /dev/null  || lock_quit
 
 log "Removing old log files"
 if [ -d $LOGDIR ]
 then
 	find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
 fi
-
 
 run pre_backup_command 
 
