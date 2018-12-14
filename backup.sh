@@ -104,10 +104,11 @@ fi
 
 ulimit -n 2048
 
-trap quit SIGINT SIGTERM SIGHUP
+trap lock_quit SIGINT SIGTERM SIGHUP
 log "Acquiring lock file $LOCK_FILE" 
 $LOCKFILE -$LOCK_WAIT_TIME -r $NUM_TRIES $LOCK_FILE 2> /dev/null  || lock_quit
 
+trap quit SIGINT SIGTERM SIGHUP
 log "Removing old log files"
 if [ -d $LOGDIR ]
 then
