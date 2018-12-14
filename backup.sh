@@ -6,6 +6,7 @@ LOG_KEEP_DAYS=90
 LOCK_WAIT_TIME="7200"
 NUM_TRIES=4
 SLEEPTIME=20
+LOCKFILE="/usr/bin/lockfile"
 LOCK_FILE="/tmp/backup.lck"
 LOGFILE="/dev/null"
 
@@ -96,7 +97,7 @@ ulimit -n 2048
 
 trap quit SIGINT SIGTERM SIGHUP
 log "Acquiring lock file $LOCK_FILE" 
-log $(/usr/bin/lockfile -$LOCK_WAIT_TIME -r $NUM_TRIES  $LOCK_FILE 2>&1 || exit 1 && echo "acquired lock")
+log $($LOCKFILE -$LOCK_WAIT_TIME -r $NUM_TRIES  $LOCK_FILE 2>&1 || exit 1 && echo "acquired lock")
 
 log "Removing old log files"
 if [ -d $LOGDIR ]
