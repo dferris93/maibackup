@@ -47,22 +47,12 @@ run ()
 	fi
 }
 
-no_quit_run ()
-{
-	log "Running: $@"
-	$@ 2>&1 | log
-	if [[ $? != 0 ]]
-	then
-		log "$@ exited with non zero status: $?"
-	fi
-}
-
 quit ()
 {
     trap '' SIGINT
     log "quitting backup"
     failed_backup_command 2>&1 | log
-    no_quit_run notify 
+    (notify | log)  || log "notify exited with status $?"
     rm -f $LOCK_FILE
     trap SIGINT
     exit 1
@@ -72,7 +62,7 @@ lock_quit ()
 {
 	trap '' SIGINT
 	log "Unable to actuire lockfile"
-	no_quit_run notify
+	(notify | log) || log "notify exited with status $?"
 	trap SIGINT
 	exit 1
 }
