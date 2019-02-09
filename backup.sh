@@ -3,12 +3,8 @@
 set -o pipefail
 
 LOG_KEEP_DAYS=90
-LOCK_WAIT_TIME="7200"
 NUM_TRIES=4
 SLEEPTIME=20
-LOCKFILE="/usr/bin/lockfile"
-LOCK_FILE="/tmp/backup.lck"
-LOGFILE="/dev/null"
 
 log ()
 {
@@ -53,19 +49,10 @@ quit ()
     log "quitting backup"
     failed_backup_command 2>&1 | log
     (notify | log)  || log "notify exited with status $?"
-    rm -f $LOCK_FILE
     trap SIGINT
     exit 1
 }
 
-lock_quit ()
-{
-	trap '' SIGINT
-	log "Unable to actuire lockfile"
-	(notify | log) || log "notify exited with status $?"
-	trap SIGINT
-	exit 1
-}
 
 retry ()
 {
@@ -104,9 +91,6 @@ fi
 
 ulimit -n 2048
 
-trap lock_quit SIGINT SIGTERM SIGHUP
-log "Acquiring lock file $LOCK_FILE" 
-$LOCKFILE -$LOCK_WAIT_TIME -r $NUM_TRIES $LOCK_FILE 2> /dev/null  || lock_quit
 
 trap quit SIGINT SIGTERM SIGHUP
 log "Removing old log files"
@@ -121,6 +105,4 @@ retry $BACKUP_CMD
 
 run post_backup_command 
 
-log "Removing $LOCK_FILE" 
-rm -f $LOCK_FILE
 log "done"
