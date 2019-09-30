@@ -89,8 +89,10 @@ then
 	exit 1
 fi
 
-ulimit -n 2048
-
+if [[ $SET_ULIMIT > 0 ]]
+then
+	ulimit -n $SET_ULIMIT
+fi
 
 trap quit SIGINT SIGTERM SIGHUP
 log "Removing old log files"
