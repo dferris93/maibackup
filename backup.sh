@@ -95,10 +95,13 @@ then
 fi
 
 trap quit SIGINT SIGTERM SIGHUP
-log "Removing old log files"
 if [ -d $LOGDIR ]
 then
-	find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
+	if [[ $(uname) != "Darwin" ]]
+	then
+		log "Removing old log files"
+		find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
+	fi
 fi
 
 run pre_backup_command 
