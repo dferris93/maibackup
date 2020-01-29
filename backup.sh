@@ -35,7 +35,7 @@ notify ()
 run ()
 {
 	log "Running: $@"
-	$@ 2>&1 | log
+	eval $@ 2>&1 | log
 	if [[ $? != 0 ]]
 	then
 		log "$@ exited with non zero status: $?"
@@ -60,7 +60,8 @@ retry ()
 	log "Running: $@"
 	while [ true ]
 	do
-		$@ 2>&1 | log
+		sleep 10
+		eval $@ 2>&1 | log
 		if [[ $? != 0 ]]
 		then
 		    if [[ $RETRIES > 0 ]]
@@ -104,10 +105,15 @@ then
 	fi
 fi
 
-run pre_backup_command 
-
-retry $BACKUP_CMD
-
-run post_backup_command 
+if [[ $DRY_RUN == "true" ]]
+then
+    type pre_backup_command
+    echo $BACKUP_CMD
+    type post_backup_command
+else
+    run pre_backup_command 
+    retry $BACKUP_CMD
+    run post_backup_command 
+fi
 
 log "done"
