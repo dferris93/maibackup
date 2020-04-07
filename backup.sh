@@ -19,19 +19,6 @@ log ()
 	fi
 }
 
-notify () 
-{
-	if [[ -n $EMAIL ]]
-	then
-		if [[ -f $LOGFILE ]]
-		then
-			tail -n 100 $LOGFILE | mail -s "Backup failure on $(hostname)" $EMAIL
-		fi
-	else	
-		echo "Backup failed"
-	fi
-}
-
 run ()
 {
 	log "Running: $@"
@@ -48,7 +35,7 @@ quit ()
     trap '' SIGINT
     log "quitting backup"
     failed_backup_command 2>&1 | log
-    (notify | log)  || log "notify exited with status $?"
+    log "failed_backup_command exited with status $?"
     trap SIGINT
     exit 1
 }
