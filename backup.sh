@@ -101,6 +101,7 @@ else
     run pre_backup_command 
     retry $BACKUP_CMD
     run post_backup_command 
+    run successful_backup_command
 fi
 
 log "done"
