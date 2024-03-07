@@ -45,9 +45,8 @@ retry ()
 {
 	RETRIES=$NUM_TRIES
 	log "Running: $@"
-	while [ true ]
+	while [[ true ]]
 	do
-		sleep 10
 		eval $@ 2>&1 | log
 		if [[ $? != 0 ]]
 		then
@@ -83,11 +82,11 @@ then
 fi
 
 trap quit SIGINT SIGTERM SIGHUP
-if [ -d $LOGDIR ]
+if [[ -n $LOGDIR && -v $LOGDIR && -d $LOGDIR ]]
 then
 	if [[ $(uname) != "Darwin" ]]
 	then
-		log "Removing old log files"
+		log "Removing old log files from $LOGDIR"
 		find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
 	fi
 fi
@@ -97,6 +96,7 @@ then
     type pre_backup_command
     echo $BACKUP_CMD
     type post_backup_command
+    type successful_backup_command
 else
     run pre_backup_command 
     retry $BACKUP_CMD
