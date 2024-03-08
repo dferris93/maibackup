@@ -112,13 +112,14 @@ then
 else
     run pre_backup_command 
     retry $BACKUP_CMD
-    if [[ $? -ne 0 ]]
+    es=$?
+    run post_backup_command 
+    if [[ $es -ne 0 ]]
     then
         quit
     else
         run successful_backup_command
     fi
-    run post_backup_command 
 fi
 
 log "done"
