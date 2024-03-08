@@ -52,20 +52,23 @@ retry ()
 		then
 		    if [[ $RETRIES > 0 ]]
 		    then
-			RETRIES=$((RETRIES-1))
-			log "Retries: $RETRIES"
-			log "Sleep for $SLEEPTIME"
-			sleep $SLEEPTIME
-			SLEEPTIME=$((SLEEPTIME*2))
-			continue
+                RETRIES=$((RETRIES-1))
+                log "Retries: $RETRIES"
+                log "Sleep for $SLEEPTIME"
+                sleep $SLEEPTIME
+                SLEEPTIME=$((SLEEPTIME*2))
+                continue
 		    else
-			log "$@ exited with non zero status: $?"
-			quit
+                log "$@ exited with non zero status: $?"
+                es=$?
+                break
 		    fi
 		else
 		    break
+            es=0
 		fi
 	done
+    return $es
 }
 
 source $1
@@ -95,13 +98,23 @@ if [[ $DRY_RUN == "true" ]]
 then
     type pre_backup_command
     echo $BACKUP_CMD
+    if [[ $? -ne 0 ]]
+    then
+        quit
+    else
+        type successful_backup_command
+    fi
     type post_backup_command
-    type successful_backup_command
 else
     run pre_backup_command 
     retry $BACKUP_CMD
+    if [[ $? -ne 0 ]]
+    then
+        quit
+    else
+        run successful_backup_command
+    fi
     run post_backup_command 
-    run successful_backup_command
 fi
 
 log "done"
