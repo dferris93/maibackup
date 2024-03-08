@@ -27,6 +27,9 @@ run ()
 	then
 		log "$@ exited with non zero status: $?"
 		quit
+        return 1
+    else
+        return 0
 	fi
 }
 
@@ -59,8 +62,8 @@ retry ()
                 SLEEPTIME=$((SLEEPTIME*2))
                 continue
 		    else
-                log "$@ exited with non zero status: $?"
                 es=$?
+                log "$@ exited with non zero status: $es"
                 break
 		    fi
 		else
@@ -68,6 +71,7 @@ retry ()
             es=0
 		fi
 	done
+    log "returning $es"
     return $es
 }
 
