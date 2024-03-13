@@ -89,18 +89,26 @@ then
 fi
 
 trap quit SIGINT SIGTERM SIGHUP
-if [[ -n $LOGDIR && -v $LOGDIR && -d $LOGDIR ]]
+echo "checking $LOGDIR"
+if [[ -d $LOGDIR ]]
 then
     if [[ -z $LOG_COMPRESS_DAYS ]]
     then
         LOG_COMPRESS_DAYS=1
+    fi
+    if [[ -z $LOG_KEEP_DAYS ]]
+    then
+        LOG_KEEP_DAYS=30
     fi
 	if [[ $(uname) != "Darwin" ]]
 	then
 		log "Removing old log files from $LOGDIR"
 		find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
         log "Compress old log files from $LOGDIR"
-        find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_COMPRESS_DAYS | grep -v '\.gz$' | xargs -n 1 pigz --rsyncable 
+        if [[ $(ls -l $LOGDIR | wc -l) -gt 0 ]]
+        then
+            find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_COMPRESS_DAYS | grep -v '\.gz$' | xargs -n 1 pigz --rsyncable 
+        fi
 	fi
 fi
 
