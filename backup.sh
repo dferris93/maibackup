@@ -2,7 +2,6 @@
 
 set -o pipefail
 
-LOG_KEEP_DAYS=90
 NUM_TRIES=4
 SLEEPTIME=20
 
@@ -98,7 +97,7 @@ then
     fi
     if [[ -z $LOG_KEEP_DAYS ]]
     then
-        LOG_KEEP_DAYS=30
+        LOG_KEEP_DAYS=90
     fi
 	if [[ $(uname) != "Darwin" ]]
 	then
