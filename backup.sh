@@ -100,7 +100,7 @@ then
 		log "Removing old log files from $LOGDIR"
 		find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_KEEP_DAYS -delete
         log "Compress old log files from $LOGDIR"
-        find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_COMPRESS_DAYS | xargs -n 1 pigz --rsyncable 
+        find $LOGDIR -maxdepth 1 -type f -mtime +$LOG_COMPRESS_DAYS | grep -v '\.gz$' | xargs -n 1 pigz --rsyncable 
 	fi
 fi
 
