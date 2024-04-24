@@ -36,6 +36,7 @@ quit ()
 {
     trap '' SIGINT
     log "quitting backup"
+    post_backup_command 2>&1 | log
     failed_backup_command 2>&1 | log
     log "failed_backup_command exited with status $?"
     trap SIGINT
@@ -119,18 +120,18 @@ then
     then
         quit
     else
+        type post_backup_command
         type successful_backup_command
     fi
-    type post_backup_command
 else
     run pre_backup_command 
     retry $BACKUP_CMD
     es=$?
-    run post_backup_command 
     if [[ $es -ne 0 ]]
     then
         quit
     else
+        run post_backup_command 
         run successful_backup_command
     fi
 fi
