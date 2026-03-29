@@ -180,6 +180,7 @@ maintain_logs() {
 main() {
     local config_file=${1:-}
     local backup_status=0
+    local nounset_was_enabled=0
 
     if [[ $# -ne 1 || -z $config_file ]]; then
         usage
@@ -191,8 +192,17 @@ main() {
         exit 1
     fi
 
+    if [[ $- == *u* ]]; then
+        nounset_was_enabled=1
+        set +u
+    fi
+
     # shellcheck disable=SC1090
     source "$config_file"
+
+    if [[ $nounset_was_enabled -eq 1 ]]; then
+        set -u
+    fi
 
     NUM_TRIES=${NUM_TRIES:-4}
     SLEEPTIME=${SLEEPTIME:-20}
