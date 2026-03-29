@@ -34,12 +34,16 @@ run ()
 
 quit ()
 {
-    trap '' SIGINT
+    trap '' SIGINT SIGTERM SIGHUP
     log "quitting backup"
-    post_backup_command 2>&1 | log
-    failed_backup_command 2>&1 | log
-    log "failed_backup_command exited with status $?"
-    trap SIGINT
+    if [[ $POST_BACKUP_DONE -eq 0 ]]; then
+        post_backup_command 2>&1 | log
+        POST_BACKUP_DONE=1
+    fi
+    if [[ $FAILED_DONE -eq 0 ]]; then
+        failed_backup_command 2>&1 | log
+        FAILED_DONE=1
+    fi
     exit 1
 }
 
@@ -88,6 +92,8 @@ then
 	ulimit -n $SET_ULIMIT
 fi
 
+POST_BACKUP_DONE=0
+FAILED_DONE=0
 trap quit SIGINT SIGTERM SIGHUP
 echo "checking $LOGDIR"
 if [[ -d $LOGDIR ]]
@@ -124,14 +130,18 @@ then
         type successful_backup_command
     fi
 else
-    run pre_backup_command 
+    run pre_backup_command
     retry $BACKUP_CMD
     es=$?
-    if [[ $es -ne 0 ]]
-    then
-        quit
+
+    post_backup_command 2>&1 | log
+    POST_BACKUP_DONE=1
+
+    if [[ $es -ne 0 ]]; then
+        failed_backup_command 2>&1 | log
+        FAILED_DONE=1
+        exit 1
     else
-        run post_backup_command 
         run successful_backup_command
     fi
 fi
